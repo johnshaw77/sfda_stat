@@ -41,6 +41,8 @@ class TTestResponse(BaseModel):
     critical_value: float
     reject_null: bool
     confidence_interval: Optional[List[float]]
+    effect_size: Optional[float] = None
+    effect_size_interpretation: Optional[str] = None
 
 
 class ChiSquareResponse(BaseModel):
@@ -65,6 +67,8 @@ class ANOVAResponse(BaseModel):
     mean_square_between: float
     mean_square_within: float
     reject_null: bool
+    effect_size: Optional[float] = None
+    effect_size_interpretation: Optional[str] = None
 
 
 class RegressionResponse(BaseModel):
@@ -87,6 +91,8 @@ class CorrelationResponse(BaseModel):
     p_value: float
     confidence_interval: List[float]
     interpretation: str
+    effect_size: Optional[float] = None
+    effect_size_interpretation: Optional[str] = None
 
 
 class CorrelationMatrixResponse(BaseModel):
@@ -104,6 +110,42 @@ class DistributionAnalysisResponse(BaseModel):
     goodness_of_fit: float
     p_value: float
     is_good_fit: bool
+
+
+class NonparametricTestResponse(BaseModel):
+    """非參數檢定基礎回應模型"""
+
+    statistic: float
+    p_value: float
+    reject_null: bool
+    alpha: float
+    effect_size: Optional[float] = None
+    interpretation: str
+
+
+class MannWhitneyResponse(NonparametricTestResponse):
+    """Mann-Whitney U 檢定回應模型"""
+
+    u_statistic: float
+    z_score: Optional[float] = None
+    rank_sum1: float
+    rank_sum2: float
+
+
+class WilcoxonResponse(NonparametricTestResponse):
+    """Wilcoxon 符號等級檢定回應模型"""
+
+    w_statistic: float
+    z_score: Optional[float] = None
+    n_pairs: int
+
+
+class KruskalWallisResponse(NonparametricTestResponse):
+    """Kruskal-Wallis 檢定回應模型"""
+
+    h_statistic: float
+    degrees_of_freedom: int
+    n_groups: int
 
 
 class ErrorResponse(BaseModel):

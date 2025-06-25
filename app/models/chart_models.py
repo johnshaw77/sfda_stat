@@ -46,4 +46,31 @@ class SimpleChartRequest(BaseModel):
     labels: List[str] = Field(..., description="標籤陣列", min_items=1)
     values: List[float] = Field(..., description="數值陣列", min_items=1)
     title: Optional[str] = Field(None, description="圖表標題")
-    chart_type: str = Field(..., description="圖表類型", pattern="^(pie|bar|line)$") 
+    chart_type: str = Field(..., description="圖表類型", pattern="^(pie|bar|line)$")
+
+
+class HistogramRequest(BaseModel):
+    """直方圖請求模型"""
+    values: List[float] = Field(..., description="數值陣列", min_items=5)
+    bins: Optional[int] = Field(10, description="直方圖區間數", ge=5, le=50)
+    title: Optional[str] = Field(None, description="圖表標題")
+    x_axis_label: Optional[str] = Field("數值", description="X軸標籤")
+    y_axis_label: Optional[str] = Field("頻率", description="Y軸標籤")
+
+
+class BoxplotRequest(BaseModel):
+    """盒鬚圖請求模型"""
+    groups: List[List[float]] = Field(..., description="各組數據", min_items=1)
+    group_labels: Optional[List[str]] = Field(None, description="組別標籤")
+    title: Optional[str] = Field(None, description="圖表標題")
+    y_axis_label: Optional[str] = Field("數值", description="Y軸標籤")
+
+
+class ScatterRequest(BaseModel):
+    """散點圖請求模型"""
+    x: List[float] = Field(..., description="X軸數據", min_items=3)
+    y: List[float] = Field(..., description="Y軸數據", min_items=3)
+    title: Optional[str] = Field(None, description="圖表標題")
+    x_axis_label: Optional[str] = Field("X", description="X軸標籤")
+    y_axis_label: Optional[str] = Field("Y", description="Y軸標籤")
+    show_regression_line: bool = Field(False, description="是否顯示迴歸線") 

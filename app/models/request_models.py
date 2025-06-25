@@ -95,3 +95,32 @@ class DistributionTestRequest(BaseModel):
     distribution: str = Field(
         "normal", description="檢定的分佈類型", pattern="^(normal|exponential|uniform)$"
     )
+
+
+class MannWhitneyRequest(BaseModel):
+    """Mann-Whitney U 檢定請求模型"""
+
+    sample1: List[float] = Field(..., description="樣本1數據", min_items=3)
+    sample2: List[float] = Field(..., description="樣本2數據", min_items=3)
+    alpha: float = Field(0.05, description="顯著水準", gt=0, lt=1)
+    alternative: str = Field(
+        "two-sided", description="對立假設", pattern="^(two-sided|less|greater)$"
+    )
+
+
+class WilcoxonRequest(BaseModel):
+    """Wilcoxon 符號等級檢定請求模型"""
+
+    sample1: List[float] = Field(..., description="第一次測量數據", min_items=3)
+    sample2: List[float] = Field(..., description="第二次測量數據", min_items=3)
+    alpha: float = Field(0.05, description="顯著水準", gt=0, lt=1)
+    alternative: str = Field(
+        "two-sided", description="對立假設", pattern="^(two-sided|less|greater)$"
+    )
+
+
+class KruskalWallisRequest(BaseModel):
+    """Kruskal-Wallis 檢定請求模型"""
+
+    groups: List[List[float]] = Field(..., description="各組數據", min_items=3)
+    alpha: float = Field(0.05, description="顯著水準", gt=0, lt=1)

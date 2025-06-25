@@ -27,9 +27,12 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
 - `POST /api/v1/descriptive/percentiles` - 百分位數
 
 ### 推論統計
-- `POST /api/v1/inferential/ttest` - t 檢定
+- `POST /api/v1/inferential/ttest` - t 檢定 (含效果量)
 - `POST /api/v1/inferential/chisquare` - 卡方檢定
-- `POST /api/v1/inferential/anova` - ANOVA 分析
+- `POST /api/v1/inferential/anova` - ANOVA 分析 (含效果量)
+- `POST /api/v1/inferential/mann_whitney` - Mann-Whitney U 檢定
+- `POST /api/v1/inferential/wilcoxon` - Wilcoxon 符號等級檢定
+- `POST /api/v1/inferential/kruskal_wallis` - Kruskal-Wallis 檢定
 
 ### 迴歸分析
 - `POST /api/v1/regression/linear` - 線性迴歸
@@ -37,14 +40,23 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
 - `POST /api/v1/regression/polynomial` - 多項式迴歸
 
 ### 相關性分析
-- `POST /api/v1/correlation/pearson` - Pearson 相關
-- `POST /api/v1/correlation/spearman` - Spearman 相關
-- `POST /api/v1/correlation/kendall` - Kendall 相關
-- `POST /api/v1/correlation/matrix` - 相關矩陣
+- `POST /api/v1/correlation/pearson` - Pearson 相關 (含效果量)
+- `POST /api/v1/correlation/spearman` - Spearman 相關 (含效果量)
+- `POST /api/v1/correlation/kendall` - Kendall 相關 (含效果量)
+- `POST /api/v1/correlation/matrix` - 相關矩陣 (含效果量)
 
 ### 機率分佈
 - `POST /api/v1/distribution/normal` - 常態分佈分析
 - `POST /api/v1/distribution/test` - 分佈適合度檢定
+
+### 統計圖表
+- `POST /api/v1/charts/pie` - 圓餅圖
+- `POST /api/v1/charts/bar` - 長條圖
+- `POST /api/v1/charts/line` - 折線圖
+- `POST /api/v1/charts/simple` - 簡單圖表
+- `POST /api/v1/charts/histogram` - 直方圖
+- `POST /api/v1/charts/boxplot` - 盒鬚圖
+- `POST /api/v1/charts/scatter` - 散點圖
 
 ## 詳細 API 端點
 
@@ -173,7 +185,9 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
   "degrees_of_freedom": 8,
   "critical_value": 2.306,
   "reject_null": true,
-  "confidence_interval": [-8.1, -1.9]
+  "confidence_interval": [-8.1, -1.9],
+  "effect_size": 2.45,
+  "interpretation": "Cohen's d = 2.45 (大效果)"
 }
 ```
 
@@ -229,7 +243,86 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
   "sum_of_squares_within": 20.0,
   "mean_square_between": 100.0,
   "mean_square_within": 1.667,
-  "reject_null": true
+  "reject_null": true,
+  "effect_size": 0.91,
+  "interpretation": "Eta 平方 = 0.91 (大效果)"
+}
+```
+
+#### POST /api/v1/inferential/mann_whitney
+執行 Mann-Whitney U 檢定。
+
+**請求參數**:
+```json
+{
+  "sample1": [1, 2, 3, 4, 5],
+  "sample2": [6, 7, 8, 9, 10],
+  "alpha": 0.05,
+  "alternative": "two-sided"
+}
+```
+
+**回應**:
+```json
+{
+  "statistic": 0.0,
+  "p_value": 0.0079,
+  "reject_null": true,
+  "alpha": 0.05,
+  "effect_size": 0.89,
+  "interpretation": "Mann-Whitney U 檢定顯示兩組顯著不同 (p < 0.05)，效果量 r = 0.89 (大效果)"
+}
+```
+
+#### POST /api/v1/inferential/wilcoxon
+執行 Wilcoxon 符號等級檢定。
+
+**請求參數**:
+```json
+{
+  "sample1": [1, 2, 3, 4, 5],
+  "sample2": [2, 3, 4, 5, 6],
+  "alpha": 0.05,
+  "alternative": "two-sided"
+}
+```
+
+**回應**:
+```json
+{
+  "statistic": 0.0,
+  "p_value": 0.0625,
+  "reject_null": false,
+  "alpha": 0.05,
+  "effect_size": 0.76,
+  "interpretation": "Wilcoxon 檢定顯示無顯著差異 (p > 0.05)，效果量 r = 0.76 (大效果)"
+}
+```
+
+#### POST /api/v1/inferential/kruskal_wallis
+執行 Kruskal-Wallis 檢定。
+
+**請求參數**:
+```json
+{
+  "groups": [
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12]
+  ],
+  "alpha": 0.05
+}
+```
+
+**回應**:
+```json
+{
+  "statistic": 9.746,
+  "p_value": 0.0077,
+  "reject_null": true,
+  "alpha": 0.05,
+  "effect_size": 0.86,
+  "interpretation": "Kruskal-Wallis 檢定顯示各組間有顯著差異 (p < 0.05)，修正 Eta 平方 = 0.86 (大效果)"
 }
 ```
 
@@ -336,7 +429,8 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
   "correlation_coefficient": 1.0,
   "p_value": 0.0000,
   "confidence_interval": [1.0, 1.0],
-  "interpretation": "完全正相關"
+  "effect_size": 1.0,
+  "interpretation": "完全正相關，決定係數 r² = 1.0 (大效果)"
 }
 ```
 
@@ -357,7 +451,8 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
   "correlation_coefficient": 1.0,
   "p_value": 0.0000,
   "confidence_interval": [1.0, 1.0],
-  "interpretation": "完全正相關"
+  "effect_size": 1.0,
+  "interpretation": "完全正相關，決定係數 ρ² = 1.0 (大效果)"
 }
 ```
 
@@ -391,6 +486,28 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
     [0.0, 0.0, 0.0]
   ],
   "columns": ["X1", "X2", "X3"]
+}
+```
+
+#### POST /api/v1/correlation/kendall
+計算 Kendall tau 相關係數。
+
+**請求參數**:
+```json
+{
+  "x": [1, 2, 3, 4, 5],
+  "y": [1, 3, 2, 4, 5]
+}
+```
+
+**回應**:
+```json
+{
+  "correlation_coefficient": 0.8,
+  "p_value": 0.0833,
+  "confidence_interval": [0.2, 1.0],
+  "effect_size": 0.64,
+  "interpretation": "強正相關，決定係數 τ² = 0.64 (大效果)"
 }
 ```
 
@@ -440,6 +557,128 @@ SFDA 統計學分析 API 是一個基於 FastAPI 的統計計算服務，提供�
   "goodness_of_fit": 0.827,
   "p_value": 0.827,
   "is_good_fit": true
+}
+```
+
+### 7. 統計圖表
+
+#### POST /api/v1/charts/histogram
+創建直方圖。
+
+**請求參數**:
+```json
+{
+  "values": [1, 2, 2, 3, 3, 3, 4, 4, 5],
+  "bins": 5,
+  "title": "數據分佈",
+  "x_axis_label": "數值",
+  "y_axis_label": "頻率"
+}
+```
+
+**回應**:
+```json
+{
+  "success": true,
+  "chart_type": "histogram",
+  "data": [
+    {
+      "bin_start": 1.0,
+      "bin_end": 1.8,
+      "bin_center": 1.4,
+      "count": 1,
+      "frequency": 0.111
+    }
+  ],
+  "title": "數據分佈",
+  "confidence": 1.0,
+  "reasoning": "成功創建包含 9 個數據點的直方圖，分為 5 個區間",
+  "metadata": {
+    "bins": 5,
+    "data_count": 9,
+    "mean": 3.0,
+    "std": 1.22
+  }
+}
+```
+
+#### POST /api/v1/charts/boxplot
+創建盒鬚圖。
+
+**請求參數**:
+```json
+{
+  "groups": [
+    [1, 2, 3, 4, 5],
+    [3, 4, 5, 6, 7],
+    [5, 6, 7, 8, 9]
+  ],
+  "group_labels": ["組別A", "組別B", "組別C"],
+  "title": "組間比較"
+}
+```
+
+**回應**:
+```json
+{
+  "success": true,
+  "chart_type": "boxplot",
+  "data": [
+    {
+      "group": "組別A",
+      "q1": 2.0,
+      "median": 3.0,
+      "q3": 4.0,
+      "lower_whisker": 1.0,
+      "upper_whisker": 5.0,
+      "outliers": [],
+      "mean": 3.0,
+      "count": 5
+    }
+  ],
+  "title": "組間比較",
+  "confidence": 1.0,
+  "reasoning": "成功創建包含 3 個組別，總計 15 個數據點的盒鬚圖",
+  "metadata": {
+    "groups_count": 3,
+    "total_points": 15
+  }
+}
+```
+
+#### POST /api/v1/charts/scatter
+創建散點圖。
+
+**請求參數**:
+```json
+{
+  "x": [1, 2, 3, 4, 5],
+  "y": [2, 4, 6, 8, 10],
+  "title": "X與Y的關係",
+  "show_regression_line": true
+}
+```
+
+**回應**:
+```json
+{
+  "success": true,
+  "chart_type": "scatter",
+  "data": [
+    {"x": 1.0, "y": 2.0},
+    {"x": 2.0, "y": 4.0}
+  ],
+  "title": "X與Y的關係",
+  "confidence": 1.0,
+  "reasoning": "成功創建包含 5 個數據點的散點圖，相關係數 r = 1.000",
+  "metadata": {
+    "correlation": 1.0,
+    "r_squared": 1.0,
+    "regression_line": [
+      {"x": 1.0, "y": 2.0},
+      {"x": 5.0, "y": 10.0}
+    ]
+  }
 }
 ```
 
@@ -559,27 +798,28 @@ curl -X POST "http://localhost:8000/api/v1/descriptive/basic" \
 
 #### 功能特色
 - 完整的描述性統計功能
-- 主要推論統計檢定
+- 主要推論統計檢定（含非參數檢定）
+- 自動效果量計算與解釋
 - 基本迴歸分析
-- 相關性分析
+- 相關性分析（含效果量）
 - 機率分佈分析
+- 統計圖表視覺化
 
 #### 已知限制
 - 尚未支援時間序列分析
 - 尚未支援多變量統計分析
-- 尚未支援非參數檢定
 
 ### 未來版本規劃
 
 #### 1.1.0 (規劃中)
 - 新增時間序列分析功能
-- 新增非參數統計檢定
 - 效能最佳化
+- 新增更多進階統計檢定
 
 #### 1.2.0 (規劃中)
 - 新增多變量統計分析
-- 新增視覺化端點
 - 新增批次處理功能
+- 機器學習基礎功能
 
 ## 支援與回饋
 

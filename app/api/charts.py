@@ -4,6 +4,9 @@ from app.models.chart_models import (
     CreateBarChartRequest,
     CreateLineChartRequest,
     SimpleChartRequest,
+    HistogramRequest,
+    BoxplotRequest,
+    ScatterRequest,
     ChartResponse,
 )
 from app.services.chart_service import ChartService
@@ -80,6 +83,75 @@ async def create_simple_chart(request: SimpleChartRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/histogram", response_model=ChartResponse)
+async def create_histogram(request: HistogramRequest):
+    """
+    創建直方圖
+
+    用於顯示數據的分佈情況和頻率
+    適用於：
+    - 數據分佈視覺化
+    - 常態性檢查
+    - 異常值識別
+    """
+    try:
+        return chart_service.create_histogram(
+            values=request.values,
+            bins=request.bins,
+            title=request.title,
+            x_axis_label=request.x_axis_label,
+            y_axis_label=request.y_axis_label
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/boxplot", response_model=ChartResponse)
+async def create_boxplot(request: BoxplotRequest):
+    """
+    創建盒鬚圖
+
+    用於比較多組數據的分佈和識別異常值
+    適用於：
+    - 組間比較
+    - 異常值檢測
+    - 分佈形狀比較
+    """
+    try:
+        return chart_service.create_boxplot(
+            groups=request.groups,
+            group_labels=request.group_labels,
+            title=request.title,
+            y_axis_label=request.y_axis_label
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/scatter", response_model=ChartResponse)
+async def create_scatter(request: ScatterRequest):
+    """
+    創建散點圖
+
+    用於顯示兩個變數之間的關係
+    適用於：
+    - 相關性視覺化
+    - 線性關係檢查
+    - 回歸分析視覺化
+    """
+    try:
+        return chart_service.create_scatter(
+            x=request.x,
+            y=request.y,
+            title=request.title,
+            x_axis_label=request.x_axis_label,
+            y_axis_label=request.y_axis_label,
+            show_regression_line=request.show_regression_line
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/health")
 async def chart_health_check():
     """
@@ -88,5 +160,5 @@ async def chart_health_check():
     return {
         "status": "healthy",
         "service": "chart_service",
-        "supported_types": ["pie", "bar", "line"]
+        "supported_types": ["pie", "bar", "line", "histogram", "boxplot", "scatter"]
     } 

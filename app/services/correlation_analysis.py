@@ -7,6 +7,19 @@ from app.models.response_models import CorrelationResponse, CorrelationMatrixRes
 class CorrelationAnalysisService:
     """相關性分析服務類別"""
 
+    @staticmethod
+    def _interpret_correlation_effect_size(r: float) -> str:
+        """解釋相關係數效果量"""
+        abs_r = abs(r)
+        if abs_r < 0.1:
+            return "微小"
+        elif abs_r < 0.3:
+            return "小"
+        elif abs_r < 0.5:
+            return "中等"
+        else:
+            return "大"
+
     def pearson_correlation(
         self, x: List[float], y: List[float]
     ) -> CorrelationResponse:
@@ -50,11 +63,17 @@ class CorrelationAnalysisService:
             else:
                 interpretation = "無相關"
 
+            # 計算效果量 (決定係數 r²)
+            effect_size = correlation_coefficient ** 2
+            effect_size_interpretation = self._interpret_correlation_effect_size(correlation_coefficient)
+
             return CorrelationResponse(
                 correlation_coefficient=float(correlation_coefficient),
                 p_value=float(p_value),
                 confidence_interval=confidence_interval,
                 interpretation=interpretation,
+                effect_size=float(effect_size),
+                effect_size_interpretation=effect_size_interpretation,
             )
 
         except Exception as e:
@@ -104,11 +123,17 @@ class CorrelationAnalysisService:
             else:
                 interpretation = "無等級相關"
 
+            # 計算效果量 (決定係數 ρ²)
+            effect_size = correlation_coefficient ** 2
+            effect_size_interpretation = self._interpret_correlation_effect_size(correlation_coefficient)
+
             return CorrelationResponse(
                 correlation_coefficient=float(correlation_coefficient),
                 p_value=float(p_value),
                 confidence_interval=confidence_interval,
                 interpretation=interpretation,
+                effect_size=float(effect_size),
+                effect_size_interpretation=effect_size_interpretation,
             )
 
         except Exception as e:
@@ -158,11 +183,17 @@ class CorrelationAnalysisService:
             else:
                 interpretation = "無 Kendall 相關"
 
+            # 計算效果量 (決定係數 τ²)
+            effect_size = correlation_coefficient ** 2
+            effect_size_interpretation = self._interpret_correlation_effect_size(correlation_coefficient)
+
             return CorrelationResponse(
                 correlation_coefficient=float(correlation_coefficient),
                 p_value=float(p_value),
                 confidence_interval=confidence_interval,
                 interpretation=interpretation,
+                effect_size=float(effect_size),
+                effect_size_interpretation=effect_size_interpretation,
             )
 
         except Exception as e:

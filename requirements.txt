@@ -11,3 +11,4 @@ statsmodels==0.14.1
 pytest==7.4.3
 pytest-asyncio==0.21.1
 python-multipart==0.0.6
+pingouin==0.5.5
