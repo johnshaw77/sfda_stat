@@ -163,12 +163,26 @@ class InferentialStatsService:
             critical_value = stats.chi2.ppf(1 - alpha, dof)
             reject_null = p_value < alpha
 
+            # 計算 Cramér's V 效果量
+            effect_size = None
+            effect_size_interpretation = None
+            
+            if expected is None:  # 獨立性檢定
+                # Cramér's V = sqrt(χ² / (n × (min(r,c) - 1)))
+                n = np.sum(observed_array)
+                r, c = observed_array.shape
+                cramers_v = np.sqrt(statistic / (n * (min(r, c) - 1)))
+                effect_size = float(cramers_v)
+                effect_size_interpretation = self._interpret_correlation_effect_size(cramers_v)
+
             return ChiSquareResponse(
                 statistic=float(statistic),
                 p_value=float(p_value),
                 degrees_of_freedom=int(dof),
                 expected_frequencies=expected_frequencies,
                 reject_null=reject_null,
+                effect_size=effect_size,
+                effect_size_interpretation=effect_size_interpretation,
             )
 
         except Exception as e:

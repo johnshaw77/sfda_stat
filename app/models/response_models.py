@@ -53,6 +53,8 @@ class ChiSquareResponse(BaseModel):
     degrees_of_freedom: int
     expected_frequencies: List[List[float]]
     reject_null: bool
+    effect_size: Optional[float] = None
+    effect_size_interpretation: Optional[str] = None
 
 
 class ANOVAResponse(BaseModel):
