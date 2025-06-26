@@ -71,14 +71,27 @@ async def create_simple_chart(request: SimpleChartRequest):
 
     接受標籤和數值數組，根據指定類型創建圖表
     這是最常用的端點，適合 MCP 工具調用
+    支援圖片生成功能 (設定 generate_image=true)
     """
     try:
-        return chart_service.create_chart_from_simple_data(
-            request.labels,
-            request.values,
-            request.chart_type,
-            request.title
-        )
+        if request.generate_image:
+            return chart_service.create_chart_from_simple_data_with_image(
+                labels=request.labels,
+                values=request.values,
+                chart_type=request.chart_type,
+                title=request.title,
+                generate_image=True,
+                image_format=request.image_format,
+                figsize=request.figsize,
+                dpi=request.dpi
+            )
+        else:
+            return chart_service.create_chart_from_simple_data(
+                request.labels,
+                request.values,
+                request.chart_type,
+                request.title
+            )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -138,6 +151,7 @@ async def create_scatter(request: ScatterRequest):
     - 相關性視覺化
     - 線性關係檢查
     - 回歸分析視覺化
+    支援圖片生成功能 (設定 generate_image=true)
     """
     try:
         return chart_service.create_scatter(
@@ -146,7 +160,11 @@ async def create_scatter(request: ScatterRequest):
             title=request.title,
             x_axis_label=request.x_axis_label,
             y_axis_label=request.y_axis_label,
-            show_regression_line=request.show_regression_line
+            show_regression_line=request.show_regression_line,
+            generate_image=request.generate_image,
+            image_format=request.image_format,
+            figsize=request.figsize,
+            dpi=request.dpi
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
