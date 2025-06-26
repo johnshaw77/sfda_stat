@@ -113,7 +113,11 @@ async def create_histogram(request: HistogramRequest):
             bins=request.bins,
             title=request.title,
             x_axis_label=request.x_axis_label,
-            y_axis_label=request.y_axis_label
+            y_axis_label=request.y_axis_label,
+            generate_image=request.generate_image,
+            image_format=request.image_format,
+            figsize=request.figsize,
+            dpi=request.dpi
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

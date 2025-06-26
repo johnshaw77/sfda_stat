@@ -93,6 +93,14 @@ def test_image_generation():
         import base64
         try:
             decoded = base64.b64decode(result_with_image.image_base64)
+            # 存成實體檔案
+            output_file = "output_image.png"  # 輸出檔案名稱
+            
+            with open(output_file, "wb") as file:
+                file.write(decoded)
+
+                print(f"圖檔已成功儲存為 {decoded}")
+
             print(f"   Base64 解碼成功，圖片大小: {len(decoded)} bytes")
         except Exception as e:
             print(f"   Base64 解碼失敗: {e}")

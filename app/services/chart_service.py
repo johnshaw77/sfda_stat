@@ -17,12 +17,66 @@ class ChartService:
     def __init__(self):
         """初始化圖表服務，設定中文字體"""
         # 設定 matplotlib 支援中文
-        plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
+        # 嘗試多種中文字體，從最常見的開始
+        chinese_fonts = [
+            'PingFang HK',           # macOS 繁體中文字體
+            'PingFang SC',           # macOS 簡體中文字體  
+            'PingFang TC',           # macOS 繁體中文字體
+            'Hiragino Sans GB',      # macOS 簡體中文
+            'Hiragino Sans TC',      # macOS 繁體中文
+            'Hiragino Sans CNS',     # macOS 中文字體
+            'Hiragino Sans',         # macOS 通用
+            'Arial Unicode MS',      # macOS 通用字體
+            'Microsoft YaHei',       # Windows 雅黑
+            'SimHei',               # Windows 黑體
+            'WenQuanYi Micro Hei',  # Linux 文泉驛
+            'DejaVu Sans'           # 備用
+        ]
+        
+        # 找到可用的中文字體
+        available_fonts = [f.name for f in fm.fontManager.ttflist]
+        selected_font = None
+        
+        for font in chinese_fonts:
+            if font in available_fonts:
+                selected_font = font
+                break
+        
+        if selected_font:
+            # 清除字體緩存並重新設定
+            plt.rcParams['font.sans-serif'] = [selected_font] + chinese_fonts
+            plt.rcParams['font.family'] = ['sans-serif']
+            # 清除 matplotlib 字體緩存
+            try:
+                matplotlib.font_manager.fontManager._findfont_cache.clear()
+            except:
+                pass
+            print(f"使用中文字體: {selected_font}")
+        else:
+            # 如果找不到中文字體，嘗試使用系統預設
+            plt.rcParams['font.sans-serif'] = chinese_fonts
+            print("警告: 未找到合適的中文字體，可能會有顯示問題")
+        
         plt.rcParams['axes.unicode_minus'] = False
         
         # 設定 seaborn 樣式
         sns.set_style("whitegrid")
         sns.set_palette("husl")
+        
+        # 儲存選定的字體供後續使用
+        self.chinese_font = selected_font or 'Arial Unicode MS'
+    
+    def list_available_chinese_fonts(self):
+        """列出系統中可用的中文字體"""
+        available_fonts = [f.name for f in fm.fontManager.ttflist]
+        chinese_keywords = ['PingFang', 'Hiragino', 'Microsoft', 'SimHei', 'SimSun', 'YaHei', 'WenQuanYi', 'Noto', 'Source Han']
+        
+        chinese_fonts = []
+        for font in available_fonts:
+            if any(keyword in font for keyword in chinese_keywords):
+                chinese_fonts.append(font)
+        
+        return sorted(list(set(chinese_fonts)))
 
     def create_pie_chart(
         self, 
@@ -772,12 +826,13 @@ class ChartService:
         labels = [item['label'] for item in data]
         values = [item['value'] for item in data]
         
-        # 創建圓餅圖
+        # 創建圓餅圖，明確指定字體
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', 
-                                         startangle=90, textprops={'fontsize': 10})
+                                         startangle=90, 
+                                         textprops={'fontsize': 10, 'fontfamily': self.chinese_font})
         
-        # 設定標題
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         
         # 確保圓餅圖是圓形
         ax.axis('equal')
@@ -796,15 +851,15 @@ class ChartService:
             ax.text(bar.get_x() + bar.get_width()/2., height + max(values)*0.01,
                    f'{value:.1f}', ha='center', va='bottom', fontsize=9)
         
-        # 設定標題和軸標籤
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題和軸標籤，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         if metadata:
-            ax.set_xlabel(metadata.get('x_axis_label', '類別'), fontsize=12)
-            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12)
+            ax.set_xlabel(metadata.get('x_axis_label', '類別'), fontsize=12, fontfamily=self.chinese_font)
+            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12, fontfamily=self.chinese_font)
         
-        # 美化圖表
+        # 美化圖表，設定 X 軸標籤字體
         ax.grid(True, alpha=0.3)
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha='right', fontfamily=self.chinese_font)
 
     def _create_line_chart_image(self, ax, data: List[Dict[str, Any]], title: str, metadata: Optional[Dict]):
         """生成折線圖圖片"""
@@ -819,15 +874,15 @@ class ChartService:
             ax.text(i, value + max(values)*0.02, f'{value:.1f}', 
                    ha='center', va='bottom', fontsize=9)
         
-        # 設定標題和軸標籤
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題和軸標籤，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         if metadata:
-            ax.set_xlabel(metadata.get('x_axis_label', '時間'), fontsize=12)
-            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12)
+            ax.set_xlabel(metadata.get('x_axis_label', '時間'), fontsize=12, fontfamily=self.chinese_font)
+            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12, fontfamily=self.chinese_font)
         
-        # 美化圖表
+        # 美化圖表，設定 X 軸標籤字體
         ax.grid(True, alpha=0.3)
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha='right', fontfamily=self.chinese_font)
 
     def _create_histogram_image(self, ax, data: List[Dict[str, Any]], title: str, metadata: Optional[Dict]):
         """生成直方圖圖片"""
@@ -842,11 +897,11 @@ class ChartService:
         bins = metadata.get('bins', 10) if metadata else 10
         ax.hist(values, bins=bins, alpha=0.7, color='skyblue', edgecolor='black')
         
-        # 設定標題和軸標籤
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題和軸標籤，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         if metadata:
-            ax.set_xlabel(metadata.get('x_axis_label', '數值'), fontsize=12)
-            ax.set_ylabel(metadata.get('y_axis_label', '頻率'), fontsize=12)
+            ax.set_xlabel(metadata.get('x_axis_label', '數值'), fontsize=12, fontfamily=self.chinese_font)
+            ax.set_ylabel(metadata.get('y_axis_label', '頻率'), fontsize=12, fontfamily=self.chinese_font)
             
             # 顯示統計資訊
             mean_val = metadata.get('mean', 0)
@@ -886,11 +941,11 @@ class ChartService:
             patch.set_facecolor(color)
             patch.set_alpha(0.7)
         
-        # 設定標題和軸標籤
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題和軸標籤，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         ax.set_xticklabels(labels)
         if metadata:
-            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12)
+            ax.set_ylabel(metadata.get('y_axis_label', '數值'), fontsize=12, fontfamily=self.chinese_font)
         
         # 美化圖表
         ax.grid(True, alpha=0.3)
@@ -912,11 +967,11 @@ class ChartService:
                    label=f"R² = {metadata.get('r_squared', 0):.3f}")
             ax.legend()
         
-        # 設定標題和軸標籤
-        ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+        # 設定標題和軸標籤，明確指定字體
+        ax.set_title(title, fontsize=14, fontweight='bold', pad=20, fontfamily=self.chinese_font)
         if metadata:
-            ax.set_xlabel(metadata.get('x_axis_label', 'X'), fontsize=12)
-            ax.set_ylabel(metadata.get('y_axis_label', 'Y'), fontsize=12)
+            ax.set_xlabel(metadata.get('x_axis_label', 'X'), fontsize=12, fontfamily=self.chinese_font)
+            ax.set_ylabel(metadata.get('y_axis_label', 'Y'), fontsize=12, fontfamily=self.chinese_font)
         
         # 美化圖表
         ax.grid(True, alpha=0.3) 
